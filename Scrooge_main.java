@@ -1,3 +1,6 @@
+//Written by: Daniel Olaya
+//Date: April, 2018
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import java.math.BigInteger;
 import java.security.*;
@@ -16,18 +19,18 @@ public class Scrooge_main{
 			BigInteger bigInt = new BigInteger(1, digest);
 			hash = bigInt.toString(16);	
 		}catch (NoSuchAlgorithmException e){
-    		e.printStackTrace(System.out);
-    	}
+			e.printStackTrace(System.out);
+		}
 		return hash;
 	}
 
 
 	public static void main(String[] args) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 
-		//BouncyCastly required, for installation details, https://justrocketscience.com/post/install-bouncy-castle
-        Security.addProvider(new BouncyCastleProvider());
-        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
+		//BouncyCastle required, for installation details, https://justrocketscience.com/post/install-bouncy-castle
+		Security.addProvider(new BouncyCastleProvider());
+		KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+		SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
 		keyGen.initialize(1024, random);	
 
 		//Generating P. Wuille keys
@@ -37,7 +40,7 @@ public class Scrooge_main{
 		System.out.printf("Wuillie private key: %s\n",printKey(priv_Wuille.getEncoded()));
 		System.out.printf("Wuillie public key: %s\n",printKey(pub_Wuille.getEncoded()));
 		System.out.println();
-		
+
 		//Generating Sodler keys
 		pair = keyGen.generateKeyPair();
 		PrivateKey priv_Sodler = pair.getPrivate();
