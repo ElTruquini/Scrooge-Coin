@@ -67,16 +67,19 @@ public class TxHandler {
 		}
 
 		//(2) - Verify the signatures on each input are valid
-		for(Transaction.Input i : inputs){
-			UTXO prev_utxo = new UTXO(i.prevTxHash, i.outputIndex);
+		for(int i = 0 ; i < tx.numInputs() ; i++){
+			Transaction.Input in = tx.getInput(i);
+			UTXO prev_utxo = new UTXO(in.prevTxHash, in.outputIndex);
 			Transaction.Output prev_output = pool.getTxOutput(prev_utxo);
+
 			//TODO: What message to use for verification?
 			// public static boolean verifySignature(PublicKey pubKey, byte[] message, byte[] signature) {
-			// if(!Crypto.verifySignature(prev_output.address, tx.getRawDataToSign(i.outputIndex), i.signature)){
-			// 	System.out.println("[ERROR] Invalid input signature, " + Hex.toHexString(i.prevTxHash));
-			// 	isValid = false;
-			// 	break;
-			// }
+			if(!Crypto.verifySignature(prev_output.address, tx.getRawDataToSign(i), in.signature)){
+				System.out.println("[ERROR] Invalid input signature, " + Hex.toHexString(in.prevTxHash));
+				isValid = false;
+				break;
+			}
+			System.out.println("[OK] Signature is valid");
 		}
 
 		// System.out.printf("Final input_sum: %f\n", input_sum);
