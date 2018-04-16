@@ -1,8 +1,6 @@
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
 import org.bouncycastle.util.encoders.Hex;
-
+import java.util.*;
 
 public class TxHandler {
 
@@ -19,14 +17,15 @@ public class TxHandler {
 	}
 
 	public void printPool(){
-		System.out.println("=====Printing UTXO pool=====");
+		System.out.println("=====START UTXOPool=====");
 		ArrayList<UTXO> curr_pool = pool.getAllUTXO();
 		for(UTXO i : curr_pool){ 
 			System.out.println("TxHash:" + Hex.toHexString(i.getTxHash()) + " | i:" + i.getIndex());
 		}
-		System.out.println("=====END UTXO pool=====");
+		System.out.println("=====END UTXOPool=====\n");
 
 	}
+
 
 
 	/**
@@ -40,6 +39,7 @@ public class TxHandler {
 	 */
 	public boolean isValidTx(Transaction tx) {
 		boolean isValid = true;
+		Set<UTXO> set = new HashSet<UTXO>();
 		printPool();
 
 		double output_sum = 0;
@@ -60,39 +60,34 @@ public class TxHandler {
 			Transaction.Output prev_output = pool.getTxOutput(utxo);
 			//(1) - Checking all outputs claimed are in the current UTXO pool
 			if(prev_output == null){
-				System.out.println("[ERROR] Input is not part of UTXO set, " + Hex.toHexString(i.prevTxHash));
+				System.out.println("[isValidTx - ERROR] Input is not part of UTXO set, " + Hex.toHexString(i.prevTxHash));
 				return false;
 			}
 			//(2) - Verify the signatures on each input are valid
-
 			if(!Crypto.verifySignature(prev_output.address, tx.getRawDataToSign(counter), i.signature)){
-				System.out.println("[ERROR] Invalid input signature, " + Hex.toHexString(i.prevTxHash));
+				System.out.println("[isValidTx - ERROR] Invalid input signature, " + Hex.toHexString(i.prevTxHash));
 				return false;
 			}
-			System.out.println("[OK] Signature is valid");
+			System.out.println("[isValidTx - OK] Signature is valid");
+			//(3) - No UTXO is claimed multiple times
+			if(set.contains(utxo)){
+				System.out.println("[isValidTx - ERROR] UTXO claimed multiple times " + Hex.toHexString(utxo.getTxHash()));
+				return false;
+			}else{
+				set.add(utxo);
+				System.out.println("[isValidTx - OK] UTXO not been claimed before " + Hex.toHexString(utxo.getTxHash()));
+			}
+
 
 			input_sum += prev_output.value;
 			counter++;
 		}
 
-		for(int i = 0 ; i < tx.numInputs() ; i++){
-			Transaction.Input in = tx.getInput(i);
-			UTXO prev_utxo = new UTXO(in.prevTxHash, in.outputIndex);
 
-			//TODO: What message to use for verification?
-			// public static boolean verifySignature(PublicKey pubKey, byte[] message, byte[] signature) {
-			// if(!Crypto.verifySignature(prev_output.address, tx.getRawDataToSign(i), in.signature)){
-			// 	System.out.println("[ERROR] Invalid input signature, " + Hex.toHexString(in.prevTxHash));
-			// 	isValid = false;
-			// 	break;
-			// }
-			// System.out.println("[OK] Signature is valid");
-		}
-
-		// System.out.printf("Final input_sum: %f\n", input_sum);
 		//(5) - Checking sum outputs is less than sum of input
+		// System.out.printf("Final input_sum: %f\n", input_sum);
 		if (input_sum < output_sum){
-			System.out.println("[ERROR] Output sum is greater than input sum");
+			System.out.println("[isValidTx - ERROR] Output sum is greater than input sum");
 			return false;
 		}
 

@@ -184,14 +184,37 @@ public class Scrooge_main{
 		// System.out.println("[MAIN] Tx6 - sig valid:" + Crypto.verifySignature(pubk_scrooge, tx6.getRawDataToSign(0), tx6.getInput(0).signature));
 
 
+		// START - tx7 (invalid), invalid signature
+		Transaction tx7 = new Transaction();
+		tx7.addInput(tx.getHash(),0);
+		tx7.addOutput(10, pubk_alice); 
 
+		signature.initSign(privk_alice);	// scrooge should be the signer instead
+		signature.update(tx6.getRawDataToSign(0));
+		sig_bytes = signature.sign();
+		tx7.addSignature(sig_bytes, 0);
+		tx7.finalize();
+		// END - tx7
+
+
+		//TODO: Test an UTXO is claimed multiple times.
 
 		TxHandler txHandler = new TxHandler(utxoPool);
 		System.out.println("\nValidating tx2...");
 		System.out.println("[MAIN] Tx2.isValidTx: "+ txHandler.isValidTx(tx2));
-		// // System.out.println("[MAIN] Tx3.isValidTx: "+ txHandler.isValidTx(tx3));
-		// // System.out.println("[MAIN] Tx5.isValidTx: "+ txHandler.isValidTx(tx5));
-		// // System.out.println("[MAIN] Tx6.isValidTx: "+ txHandler.isValidTx(tx6));
+
+		// System.out.println("\nValidating tx3...");
+		// System.out.println("[MAIN] Tx3.isValidTx: "+ txHandler.isValidTx(tx3));
+
+		// System.out.println("\nValidating tx5...");
+		// System.out.println("[MAIN] Tx5.isValidTx: "+ txHandler.isValidTx(tx5));
+
+		// System.out.println("\nValidating tx6...");
+		// System.out.println("[MAIN] Tx6.isValidTx: "+ txHandler.isValidTx(tx6));
+
+		// System.out.println("\nValidating tx7...");
+		// System.out.println("[MAIN] Tx7.isValidTx: "+ txHandler.isValidTx(tx7));
+
 
 		// // System.out.print("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx2}).length);
 
