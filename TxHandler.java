@@ -19,7 +19,7 @@ public class TxHandler {
 	}
 
 	public void printPool(){
-		System.out.println("\n=====Printing UTXO pool=====");
+		System.out.println("=====Printing UTXO pool=====");
 		ArrayList<UTXO> curr_pool = pool.getAllUTXO();
 		for(UTXO i : curr_pool){ 
 			System.out.println("TxHash:" + Hex.toHexString(i.getTxHash()) + " | i:" + i.getIndex());
@@ -48,29 +48,36 @@ public class TxHandler {
 			// System.out.printf("outputs:%f\n",i.value);
 			output_sum += i.value;
 		}
-		assert(output_sum > 0);
-		System.out.printf("Final output_sum: %f\n", output_sum);
+		// assert(output_sum > 0);
+		// System.out.printf("Final output_sum: %f\n", output_sum);
 
+		int counter = 0;
 		double input_sum = 0;
 		ArrayList<Transaction.Input> inputs = tx.getInputs();
 		for(Transaction.Input i : inputs){
 			System.out.println("i.outputIndex:"+i.outputIndex+" | i.prevTxHash:"+Hex.toHexString(i.prevTxHash));
-			UTXO prev_utxo = new UTXO(i.prevTxHash, i.outputIndex);
-			Transaction.Output prev_output = pool.getTxOutput(prev_utxo);
+			UTXO utxo = new UTXO(i.prevTxHash, i.outputIndex);
+			Transaction.Output prev_output = pool.getTxOutput(utxo);
 			//(1) - Checking all outputs claimed are in the current UTXO pool
 			if(prev_output == null){
 				System.out.println("[ERROR] Input is not part of UTXO set, " + Hex.toHexString(i.prevTxHash));
-				isValid = false;
-				break;
+				return false;
 			}
+			//(2) - Verify the signatures on each input are valid
+
+			if(!Crypto.verifySignature(prev_output.address, tx.getRawDataToSign(counter), i.signature)){
+				System.out.println("[ERROR] Invalid input signature, " + Hex.toHexString(i.prevTxHash));
+				return false;
+			}
+			System.out.println("[OK] Signature is valid");
+
 			input_sum += prev_output.value;
+			counter++;
 		}
 
-		//(2) - Verify the signatures on each input are valid
 		for(int i = 0 ; i < tx.numInputs() ; i++){
 			Transaction.Input in = tx.getInput(i);
 			UTXO prev_utxo = new UTXO(in.prevTxHash, in.outputIndex);
-			Transaction.Output prev_output = pool.getTxOutput(prev_utxo);
 
 			//TODO: What message to use for verification?
 			// public static boolean verifySignature(PublicKey pubKey, byte[] message, byte[] signature) {
@@ -84,15 +91,12 @@ public class TxHandler {
 
 		// System.out.printf("Final input_sum: %f\n", input_sum);
 		//(5) - Checking sum outputs is less than sum of input
-		if (isValid && input_sum < output_sum){
+		if (input_sum < output_sum){
 			System.out.println("[ERROR] Output sum is greater than input sum");
-			isValid = false;
-		}
-		if(!isValid){
-			return isValid;
+			return false;
 		}
 
-		return isValid;
+		return true;
 	}
 
 	/**

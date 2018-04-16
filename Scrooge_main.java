@@ -181,16 +181,17 @@ public class Scrooge_main{
 		// utxoPool.addUTXO(utxo, tx6.getOutput(0));
 		// END - tx6
 
-		System.out.println("[MAIN] Tx6 - sig valid:" + Crypto.verifySignature(pubk_scrooge, tx6.getRawDataToSign(0), tx6.getInput(0).signature));
+		// System.out.println("[MAIN] Tx6 - sig valid:" + Crypto.verifySignature(pubk_scrooge, tx6.getRawDataToSign(0), tx6.getInput(0).signature));
 
 
 
 
-		// // TxHandler txHandler = new TxHandler(utxoPool);
-		// // System.out.println("[FINAL] Tx2.isValidTx: "+ txHandler.isValidTx(tx2));
-		// // System.out.println("[FINAL] Tx3.isValidTx: "+ txHandler.isValidTx(tx3));
-		// // System.out.println("[FINAL] Tx5.isValidTx: "+ txHandler.isValidTx(tx5));
-		// // System.out.println("[FINAL] Tx6.isValidTx: "+ txHandler.isValidTx(tx6));
+		TxHandler txHandler = new TxHandler(utxoPool);
+		System.out.println("\nValidating tx2...");
+		System.out.println("[MAIN] Tx2.isValidTx: "+ txHandler.isValidTx(tx2));
+		// // System.out.println("[MAIN] Tx3.isValidTx: "+ txHandler.isValidTx(tx3));
+		// // System.out.println("[MAIN] Tx5.isValidTx: "+ txHandler.isValidTx(tx5));
+		// // System.out.println("[MAIN] Tx6.isValidTx: "+ txHandler.isValidTx(tx6));
 
 		// // System.out.print("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx2}).length);
 
