@@ -74,12 +74,12 @@ public class TxHandler {
 
 			//TODO: What message to use for verification?
 			// public static boolean verifySignature(PublicKey pubKey, byte[] message, byte[] signature) {
-			if(!Crypto.verifySignature(prev_output.address, tx.getRawDataToSign(i), in.signature)){
-				System.out.println("[ERROR] Invalid input signature, " + Hex.toHexString(in.prevTxHash));
-				isValid = false;
-				break;
-			}
-			System.out.println("[OK] Signature is valid");
+			// if(!Crypto.verifySignature(prev_output.address, tx.getRawDataToSign(i), in.signature)){
+			// 	System.out.println("[ERROR] Invalid input signature, " + Hex.toHexString(in.prevTxHash));
+			// 	isValid = false;
+			// 	break;
+			// }
+			// System.out.println("[OK] Signature is valid");
 		}
 
 		// System.out.printf("Final input_sum: %f\n", input_sum);
