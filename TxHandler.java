@@ -27,7 +27,6 @@ public class TxHandler {
 	}
 
 
-
 	/**
 	 * @return true if:
 	 * (1) all outputs claimed by {@code tx} are in the current UTXO pool, 
@@ -45,52 +44,48 @@ public class TxHandler {
 		double output_sum = 0;
 		ArrayList<Transaction.Output> outputs = tx.getOutputs();
 		for(Transaction.Output i : outputs){
-			// System.out.printf("outputs:%f\n",i.value);
+			// (4) - all of txs output values are non-negative
+			if (i.value < 0){
+				// System.out.println("[isValidTx - ERROR] Tx output is negative:" + i.value);
+				return false;
+			}
 			output_sum += i.value;
 		}
-		// assert(output_sum > 0);
-		// System.out.printf("Final output_sum: %f\n", output_sum);
-
 		int counter = 0;
 		double input_sum = 0;
 		ArrayList<Transaction.Input> inputs = tx.getInputs();
 		for(Transaction.Input i : inputs){
-			System.out.println("i.outputIndex:"+i.outputIndex+" | i.prevTxHash:"+Hex.toHexString(i.prevTxHash));
+			// System.out.println("New input - Prev outputIndex:"+i.outputIndex+" | prevTxHash:"+Hex.toHexString(i.prevTxHash));
 			UTXO utxo = new UTXO(i.prevTxHash, i.outputIndex);
 			Transaction.Output prev_output = pool.getTxOutput(utxo);
 			//(1) - Checking all outputs claimed are in the current UTXO pool
 			if(prev_output == null){
-				System.out.println("[isValidTx - ERROR] Input is not part of UTXO set, " + Hex.toHexString(i.prevTxHash));
+				// System.out.println("[isValidTx - ERROR] Input is not part of UTXO set, " + Hex.toHexString(i.prevTxHash));
 				return false;
 			}
 			//(2) - Verify the signatures on each input are valid
 			if(!Crypto.verifySignature(prev_output.address, tx.getRawDataToSign(counter), i.signature)){
-				System.out.println("[isValidTx - ERROR] Invalid input signature, " + Hex.toHexString(i.prevTxHash));
+				// System.out.println("[isValidTx - ERROR] Invalid input signature, " + Hex.toHexString(i.prevTxHash));
 				return false;
 			}
-			System.out.println("[isValidTx - OK] Signature is valid");
+			// System.out.println("[isValidTx - OK] Signature is valid");
 			//(3) - No UTXO is claimed multiple times
 			if(set.contains(utxo)){
-				System.out.println("[isValidTx - ERROR] UTXO claimed multiple times " + Hex.toHexString(utxo.getTxHash()));
+				// System.out.println("[isValidTx - ERROR] UTXO claimed multiple times " + Hex.toHexString(utxo.getTxHash()));
 				return false;
 			}else{
 				set.add(utxo);
-				System.out.println("[isValidTx - OK] UTXO not been claimed before " + Hex.toHexString(utxo.getTxHash()));
+				// System.out.println("[isValidTx - OK] UTXO not been claimed before " + Hex.toHexString(utxo.getTxHash()));
 			}
-
-
 			input_sum += prev_output.value;
 			counter++;
 		}
-
-
 		//(5) - Checking sum outputs is less than sum of input
 		// System.out.printf("Final input_sum: %f\n", input_sum);
 		if (input_sum < output_sum){
-			System.out.println("[isValidTx - ERROR] Output sum is greater than input sum");
+			// System.out.println("[isValidTx - ERROR] Output sum is greater than input sum");
 			return false;
 		}
-
 		return true;
 	}
 

@@ -180,7 +180,6 @@ public class Scrooge_main{
 		// utxo = new UTXO(tx6.getHash(),0);
 		// utxoPool.addUTXO(utxo, tx6.getOutput(0));
 		// END - tx6
-
 		// System.out.println("[MAIN] Tx6 - sig valid:" + Crypto.verifySignature(pubk_scrooge, tx6.getRawDataToSign(0), tx6.getInput(0).signature));
 
 
@@ -197,11 +196,39 @@ public class Scrooge_main{
 		// END - tx7
 
 
-		//TODO: Test an UTXO is claimed multiple times.
+		// Start - tx8 (invalid), UTXO claimed multiple times
+		Transaction tx8 = new Transaction();
+		tx8.addInput(tx.getHash(),0);
+		tx8.addInput(tx.getHash(),0);	// duplicate UTXO
+		tx7.addOutput(10, pubk_alice); 
+
+		signature.initSign(privk_scrooge);	// scrooge should be the signer instead
+		signature.update(tx8.getRawDataToSign(0));
+		sig_bytes = signature.sign();
+		tx8.addSignature(sig_bytes, 0);
+		tx8.addSignature(sig_bytes, 1);
+		tx8.finalize();
+		// END - tx8
+
+		// START - tx9 (invalid), negative output
+		Transaction tx9 = new Transaction();
+		tx9.addInput(tx.getHash(),0);
+		tx9.addOutput(5, pubk_alice);
+		tx9.addOutput(-3, pubk_alice);
+		tx9.addOutput(2, pubk_alice);
+
+		// has only 1 input to sign
+		signature.initSign(privk_scrooge); 
+		signature.update(tx9.getRawDataToSign(0));
+		sig_bytes = signature.sign();
+		tx9.addSignature(sig_bytes, 0);
+		tx9.finalize();
+		// END - tx9
+
 
 		TxHandler txHandler = new TxHandler(utxoPool);
-		System.out.println("\nValidating tx2...");
-		System.out.println("[MAIN] Tx2.isValidTx: "+ txHandler.isValidTx(tx2));
+		// System.out.println("\nValidating tx2...");
+		// System.out.println("[MAIN] Tx2.isValidTx: "+ txHandler.isValidTx(tx2));
 
 		// System.out.println("\nValidating tx3...");
 		// System.out.println("[MAIN] Tx3.isValidTx: "+ txHandler.isValidTx(tx3));
@@ -215,6 +242,11 @@ public class Scrooge_main{
 		// System.out.println("\nValidating tx7...");
 		// System.out.println("[MAIN] Tx7.isValidTx: "+ txHandler.isValidTx(tx7));
 
+		// System.out.println("\nValidating tx8...");
+		// System.out.println("[MAIN] Tx8.isValidTx: "+ txHandler.isValidTx(tx8));
+
+		System.out.println("\nValidating tx9...");
+		System.out.println("[MAIN] Tx9.isValidTx: "+ txHandler.isValidTx(tx9));
 
 		// // System.out.print("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx2}).length);
 
