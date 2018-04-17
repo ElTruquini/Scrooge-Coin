@@ -81,9 +81,13 @@ public class Scrooge_main{
 		//START - tx, Generating Coinbase tx, included in UTXOPool, signed with Scrooge keys.
 		Transaction tx = new Transaction();
 		tx.addOutput(10, pubk_scrooge);
+		tx.addOutput(1, pubk_scrooge);
+
 		// using random place holder value.
 		byte[] initial_hash = BigInteger.valueOf(1695609641).toByteArray();
 		tx.addInput(initial_hash, 0);
+		initial_hash = BigInteger.valueOf(1000000000).toByteArray();
+		tx.addInput(initial_hash, 1);
 
 		Signature signature = Signature.getInstance("SHA256withRSA");
 		signature.initSign(privk_scrooge);
@@ -96,6 +100,8 @@ public class Scrooge_main{
 		// adding coinbase tx to unspent outputs
 		UTXO utxo = new UTXO(tx.getHash(),0);
 		utxoPool.addUTXO(utxo, tx.getOutput(0));
+		utxo = new UTXO(tx.getHash(),1);
+		utxoPool.addUTXO(utxo, tx.getOutput(1));
 		// //END - Coinbase tx
 
 
@@ -112,9 +118,9 @@ public class Scrooge_main{
 		sig_bytes = signature.sign();
 		tx2.addSignature(sig_bytes, 0);
 		tx2.finalize();
-		utxo = new UTXO(tx2.getHash(),0);
-		utxoPool.addUTXO(utxo, tx2.getOutput(0));
-		utxoPool.addUTXO(utxo, tx2.getOutput(1));
+		// utxo = new UTXO(tx2.getHash(),0);
+		// utxoPool.addUTXO(utxo, tx2.getOutput(0));
+		// utxoPool.addUTXO(utxo, tx2.getOutput(1));
 		// END - tx2
 
 
@@ -248,7 +254,8 @@ public class Scrooge_main{
 		// System.out.println("\nValidating tx9...");
 		// System.out.println("[MAIN] Tx9.isValidTx: "+ txHandler.isValidTx(tx9));
 
-		System.out.print("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx, tx2, tx9}).length);
+
+		System.out.println("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx2, tx9}).length);
 
 
 
