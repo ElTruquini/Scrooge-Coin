@@ -95,7 +95,10 @@ public class TxHandler {
 	 * updating the current UTXO pool as appropriate.
 	 */
 	public Transaction[] handleTxs(Transaction[] possibleTxs) {
-		return null;
+		Transaction[] validated_txs = new Transaction[1];
+		for(Transaction i : possibleTxs)
+		System.out.println("[handleTxs] i:" + i);
+		return validated_txs;
 	}
 
 }

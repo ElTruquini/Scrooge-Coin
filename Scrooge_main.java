@@ -245,10 +245,10 @@ public class Scrooge_main{
 		// System.out.println("\nValidating tx8...");
 		// System.out.println("[MAIN] Tx8.isValidTx: "+ txHandler.isValidTx(tx8));
 
-		System.out.println("\nValidating tx9...");
-		System.out.println("[MAIN] Tx9.isValidTx: "+ txHandler.isValidTx(tx9));
+		// System.out.println("\nValidating tx9...");
+		// System.out.println("[MAIN] Tx9.isValidTx: "+ txHandler.isValidTx(tx9));
 
-		// // System.out.print("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx2}).length);
+		System.out.print("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx, tx2, tx9}).length);
 
 
 
