@@ -118,44 +118,35 @@ public class Scrooge_main{
 		sig_bytes = signature.sign();
 		tx2.addSignature(sig_bytes, 0);
 		tx2.finalize();
-		// utxo = new UTXO(tx2.getHash(),0);
-		// utxoPool.addUTXO(utxo, tx2.getOutput(0));
-		// utxoPool.addUTXO(utxo, tx2.getOutput(1));
 		// END - tx2
 
 
 		// START - tx3 (invalid), coinbase input, output higher value than input
 		Transaction tx3 = new Transaction();
-		tx3.addInput(tx.getHash(),0);
-		tx3.addOutput(10.1, pubk_alice);
+		tx3.addInput(tx.getHash(),1);
+		tx3.addOutput(0.5, pubk_alice);
+		tx3.addOutput(0.5, pubk_alice);
+		tx3.addOutput(0.5, pubk_alice);	// this output exceeds input sum
+
 		
 		signature.initSign(privk_scrooge);
 		signature.update(tx3.getRawDataToSign(0));
 		sig_bytes = signature.sign();
 		tx3.addSignature(sig_bytes, 0);
 		tx3.finalize();
-		// utxo = new UTXO(tx3.getHash(),0);
-		// utxoPool.addUTXO(utxo, tx3.getOutput(0));
-		// utxo = new UTXO(tx3.getHash(),1);
-		// utxoPool.addUTXO(utxo, tx3.getOutput(1));
 		// END - tx3
-
-
 
 		// START - tx4, Coinbase input, NOT part of UTXOpool
 		Transaction tx4 = new Transaction();
 		tx4.addInput(initial_hash, 0);
 		tx4.addOutput(20, pubk_alice);
 
-		signature = Signature.getInstance("SHA256withRSA");
 		signature.initSign(privk_scrooge);
 		signature.update(tx4.getRawDataToSign(0));
 		sig_bytes = signature.sign();
 		tx4.addSignature(sig_bytes, 0);
 		tx4.finalize();
 		// END - tx4
-
-
 
 		// START - tx5 (invalid), Tx4 input (not part of UTXOPool) 
 		Transaction tx5 = new Transaction();
@@ -167,10 +158,7 @@ public class Scrooge_main{
 		sig_bytes = signature.sign();
 		tx5.addSignature(sig_bytes, 0);
 		tx5.finalize();
-		// utxo = new UTXO(tx5.getHash(),0);
-		// utxoPool.addUTXO(utxo, tx5.getOutput(0));
 		// END - tx5
-
 
 		// START - tx6 (invalid), two inputs, one is part of UTXOPool the other one is not
 		Transaction tx6 = new Transaction();
@@ -183,11 +171,8 @@ public class Scrooge_main{
 		sig_bytes = signature.sign();
 		tx6.addSignature(sig_bytes, 0);
 		tx6.finalize();
-		// utxo = new UTXO(tx6.getHash(),0);
-		// utxoPool.addUTXO(utxo, tx6.getOutput(0));
 		// END - tx6
 		// System.out.println("[MAIN] Tx6 - sig valid:" + Crypto.verifySignature(pubk_scrooge, tx6.getRawDataToSign(0), tx6.getInput(0).signature));
-
 
 		// START - tx7 (invalid), invalid signature
 		Transaction tx7 = new Transaction();
@@ -200,7 +185,6 @@ public class Scrooge_main{
 		tx7.addSignature(sig_bytes, 0);
 		tx7.finalize();
 		// END - tx7
-
 
 		// Start - tx8 (invalid), UTXO claimed multiple times
 		Transaction tx8 = new Transaction();
@@ -255,7 +239,7 @@ public class Scrooge_main{
 		// System.out.println("[MAIN] Tx9.isValidTx: "+ txHandler.isValidTx(tx9));
 
 
-		System.out.println("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx2, tx9}).length);
+		System.out.println("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx2, tx3, tx9}).length);
 
 
 

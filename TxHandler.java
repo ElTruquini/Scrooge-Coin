@@ -57,12 +57,12 @@ public class TxHandler {
 		double input_sum = 0;
 		ArrayList<Transaction.Input> inputs = tx.getInputs();
 		for(Transaction.Input i : inputs){
-			System.out.println("[New input] curr.hash:" + Hex.toHexString(tx.getHash()) + " \n 			| prevTxHash:"+Hex.toHexString(i.prevTxHash) + " | prevIndex " + i.outputIndex);
+			System.out.println("[New input] curr.hash:" + Hex.toHexString(tx.getHash()) + " \n 		| prevTxHash:"+Hex.toHexString(i.prevTxHash) + " | i:" + i.outputIndex);
 			UTXO utxo = new UTXO(i.prevTxHash, i.outputIndex);
 			Transaction.Output prev_output = pool.getTxOutput(utxo);
 			// (1) - Checking all outputs claimed are in the current UTXO pool
 			if(prev_output == null){
-				System.out.println("[isValid - ERROR] Input is not part of UTXO set, " + Hex.toHexString(i.prevTxHash));
+				System.out.println("[isValid - ERROR] Input is not part of UTXO set, " + Hex.toHexString(i.prevTxHash) + " | i:" + i.outputIndex);
 				return false;
 			}
 			//(2) - Verify the signatures on each input are valid
@@ -99,21 +99,26 @@ public class TxHandler {
 	 */
 	public Transaction[] handleTxs(Transaction[] possibleTxs) {
 		ArrayList<Transaction> temp = new ArrayList<Transaction>();
-		
 		for(int i = 0 ; i < possibleTxs.length ; i++){
 			if(isValid(possibleTxs[i])){
 				temp.add(possibleTxs[i]);
-
-				//removing spent inputs from pool
+				// removing spent inputs from pool
 				ArrayList<Transaction.Input> inputs = possibleTxs[i].getInputs();
-				for (Transaction.Input in : inputs){
+				for(Transaction.Input in : inputs){
 					System.out.println("[Removing input]: prevTxHash: " + Hex.toHexString(in.prevTxHash) + " | i:" + in.outputIndex);
 					pool.removeUTXO(new UTXO(in.prevTxHash, in.outputIndex));
 				}
+				System.out.println("After removal of UTXO....");
 				printPool();
-				// UTXO t = new UTXO(possibleTx[i], )
-				// pool.addUTXO(possible[i]);
 				// adding new utxo's to pool
+				int index = 0;
+				ArrayList<Transaction.Output> outputs = possibleTxs[i].getOutputs();
+				for(Transaction.Output out : outputs){
+					pool.addUTXO(new UTXO(possibleTxs[i].getHash(), index),out);
+					index++;
+				}
+				System.out.println("After adding new UTXO...");
+				printPool();
 			}
 		}
 		System.out.println("\n\nFinal Pool:");
