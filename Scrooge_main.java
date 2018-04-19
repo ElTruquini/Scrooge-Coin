@@ -128,13 +128,13 @@ public class Scrooge_main{
 		tx3.addOutput(0.5, pubk_alice);
 		tx3.addOutput(0.5, pubk_alice);	// this output exceeds input sum
 
-		
 		signature.initSign(privk_scrooge);
 		signature.update(tx3.getRawDataToSign(0));
 		sig_bytes = signature.sign();
 		tx3.addSignature(sig_bytes, 0);
 		tx3.finalize();
 		// END - tx3
+
 
 		// START - tx4, Coinbase input, NOT part of UTXOpool
 		Transaction tx4 = new Transaction();
@@ -148,6 +148,7 @@ public class Scrooge_main{
 		tx4.finalize();
 		// END - tx4
 
+
 		// START - tx5 (invalid), Tx4 input (not part of UTXOPool) 
 		Transaction tx5 = new Transaction();
 		tx5.addInput(tx4.getHash(),0);
@@ -159,6 +160,7 @@ public class Scrooge_main{
 		tx5.addSignature(sig_bytes, 0);
 		tx5.finalize();
 		// END - tx5
+
 
 		// START - tx6 (invalid), two inputs, one is part of UTXOPool the other one is not
 		Transaction tx6 = new Transaction();
@@ -174,6 +176,7 @@ public class Scrooge_main{
 		// END - tx6
 		// System.out.println("[MAIN] Tx6 - sig valid:" + Crypto.verifySignature(pubk_scrooge, tx6.getRawDataToSign(0), tx6.getInput(0).signature));
 
+
 		// START - tx7 (invalid), invalid signature
 		Transaction tx7 = new Transaction();
 		tx7.addInput(tx.getHash(),0);
@@ -185,6 +188,7 @@ public class Scrooge_main{
 		tx7.addSignature(sig_bytes, 0);
 		tx7.finalize();
 		// END - tx7
+
 
 		// Start - tx8 (invalid), UTXO claimed multiple times
 		Transaction tx8 = new Transaction();
@@ -199,6 +203,7 @@ public class Scrooge_main{
 		tx8.addSignature(sig_bytes, 1);
 		tx8.finalize();
 		// END - tx8
+
 
 		// START - tx9 (invalid), negative output
 		Transaction tx9 = new Transaction();
@@ -217,32 +222,7 @@ public class Scrooge_main{
 
 
 		TxHandler txHandler = new TxHandler(utxoPool);
-		// System.out.println("\nValidating tx2...");
-		// System.out.println("[MAIN] Tx2.isValidTx: "+ txHandler.isValidTx(tx2));
-
-		// System.out.println("\nValidating tx3...");
-		// System.out.println("[MAIN] Tx3.isValidTx: "+ txHandler.isValidTx(tx3));
-
-		// System.out.println("\nValidating tx5...");
-		// System.out.println("[MAIN] Tx5.isValidTx: "+ txHandler.isValidTx(tx5));
-
-		// System.out.println("\nValidating tx6...");
-		// System.out.println("[MAIN] Tx6.isValidTx: "+ txHandler.isValidTx(tx6));
-
-		// System.out.println("\nValidating tx7...");
-		// System.out.println("[MAIN] Tx7.isValidTx: "+ txHandler.isValidTx(tx7));
-
-		// System.out.println("\nValidating tx8...");
-		// System.out.println("[MAIN] Tx8.isValidTx: "+ txHandler.isValidTx(tx8));
-
-		// System.out.println("\nValidating tx9...");
-		// System.out.println("[MAIN] Tx9.isValidTx: "+ txHandler.isValidTx(tx9));
-
-
 		System.out.println("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx2, tx3, tx9}).length);
-
-
-
 	}
 }
 
