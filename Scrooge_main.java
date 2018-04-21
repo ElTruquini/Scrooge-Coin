@@ -4,7 +4,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import java.math.BigInteger;
 import java.security.*;
-import java.util.Base64;
+import java.util.*;
 import java.io.*;
 
 public class Scrooge_main{
@@ -223,6 +223,8 @@ public class Scrooge_main{
 
 		TxHandler txHandler = new TxHandler(utxoPool);
 		System.out.println("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx2, tx3, tx9}).length);
+		MaxFeeHandler maxFeeHandler = new MaxFeeHandler();
+		maxFeeHandler.handleTxs(new Transaction[]{tx2, tx3});
 	}
 }
 
