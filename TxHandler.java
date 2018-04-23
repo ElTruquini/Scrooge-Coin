@@ -4,7 +4,8 @@ import java.util.*;
 
 public class TxHandler {
 
-	private UTXOPool pool;
+	protected static UTXOPool pool;
+	protected static UTXOPool spent_pool; // contains historic UTXOs
 
 	/**
 	 * Creates a public ledger whose current UTXOPool (collection of unspent transaction outputs) is
@@ -13,16 +14,26 @@ public class TxHandler {
 	 */
 	public TxHandler(UTXOPool utxoPool) {
 		pool = new UTXOPool(utxoPool);
+		spent_pool = new UTXOPool();
 	}
 
 	// Prints current state of UTXOPool pool
-	public void printPool(){
-		System.out.println("===========UTXOPool=============");
-		ArrayList<UTXO> curr_pool = pool.getAllUTXO();
-		for(UTXO i : curr_pool){ 
-			System.out.println("TxHash:" + Hex.toHexString(i.getTxHash()) + " | i:" + i.getIndex());
+	// args: 0 - current pool, 1 - historic pool
+	public static void printPool(int mode){
+		if(mode == 0){
+			System.out.println("=======Curr UTXOPool==========");
+			ArrayList<UTXO> curr = pool.getAllUTXO();
+			for(UTXO i : curr){ 
+				System.out.println("TxHash:" + Hex.toHexString(i.getTxHash()) + " | i:" + i.getIndex());
+			}
+		}else{
+			System.out.println("=======Spent UTXOPool=========");
+			ArrayList<UTXO> spents = spent_pool.getAllUTXO();
+			for(UTXO i : spents){ 
+				System.out.println("TxHash:" + Hex.toHexString(i.getTxHash()) + " | i:" + i.getIndex());
+			}
 		}
-		System.out.println("================================");
+		System.out.println("==============================");
 	}
 
 	/**
@@ -87,10 +98,13 @@ public class TxHandler {
 		for(int i = 0 ; i < possibleTxs.length ; i++){
 			if(isValid(possibleTxs[i])){
 				temp.add(possibleTxs[i]);
-				// removing spent inputs from pool
+				// removing spent inputs from pool, adding them to spent (historic) pool
 				ArrayList<Transaction.Input> inputs = possibleTxs[i].getInputs();
 				for(Transaction.Input in : inputs){
-					pool.removeUTXO(new UTXO(in.prevTxHash, in.outputIndex));
+					UTXO x = new UTXO(in.prevTxHash, in.outputIndex);
+					Transaction.Output spent_out = pool.getTxOutput(x);
+					spent_pool.addUTXO(x, spent_out);
+					pool.removeUTXO(x);
 				}
 				// adding new utxo's to pool
 				int index = 0;
@@ -101,7 +115,15 @@ public class TxHandler {
 				}
 			}
 		}
+		printPool(0);
+		printPool(1);
+
 		Transaction[] valid_txs = temp.toArray(new Transaction[temp.size()]);
+		for(int i = 0 ; i < valid_txs.length ; i++){
+			System.out.println("valid_txs[" + i + "]:" + Hex.toHexString(valid_txs[i].getHash()));
+		}
+
+
 		return valid_txs;
 	}
 

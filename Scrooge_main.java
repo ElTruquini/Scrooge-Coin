@@ -107,7 +107,7 @@ public class Scrooge_main{
 
 		// START - tx2 (valid), tx coinbase input, two valid outputs
 		Transaction tx2 = new Transaction();
-		tx2.addInput(tx.getHash(),0);
+		tx2.addInput(tx.getHash(),1);
 		tx2.addOutput(5, pubk_alice);
 		tx2.addOutput(3, pubk_alice);
 		tx2.addOutput(2, pubk_alice);
@@ -134,6 +134,20 @@ public class Scrooge_main{
 		tx3.addSignature(sig_bytes, 0);
 		tx3.finalize();
 		// END - tx3
+
+
+		// START - tx33 (valid), coinbase input
+		Transaction tx33 = new Transaction();
+		tx33.addInput(tx.getHash(),0);
+		tx33.addOutput(0.5, pubk_alice);
+		tx33.addOutput(0.5, pubk_alice);
+
+		signature.initSign(privk_scrooge);
+		signature.update(tx33.getRawDataToSign(0));
+		sig_bytes = signature.sign();
+		tx33.addSignature(sig_bytes, 0);
+		tx33.finalize();
+		// END - tx33
 
 
 		// START - tx4, Coinbase input, NOT part of UTXOpool
@@ -222,9 +236,9 @@ public class Scrooge_main{
 
 
 		TxHandler txHandler = new TxHandler(utxoPool);
-		System.out.println("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx2, tx3, tx9}).length);
+		System.out.println("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx33}).length);
 		MaxFeeHandler maxFeeHandler = new MaxFeeHandler();
-		maxFeeHandler.handleTxs(new Transaction[]{tx2, tx3});
+		maxFeeHandler.handleTxs(new Transaction[]{tx33});
 	}
 }
 
