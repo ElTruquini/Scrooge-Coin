@@ -138,7 +138,7 @@ public class Scrooge_main{
 
 		// START - tx33 (valid), coinbase input
 		Transaction tx33 = new Transaction();
-		tx33.addInput(tx.getHash(),0);
+		tx33.addInput(tx.getHash(),0); //10.0
 		tx33.addOutput(0.5, pubk_alice);
 		tx33.addOutput(0.5, pubk_alice);
 
@@ -149,6 +149,9 @@ public class Scrooge_main{
 		tx33.finalize();
 		// END - tx33
 
+
+//TODO: ADD ADDITIONAL TRANSACTIONS TO TEST COMPARE, SORT ARRAY METHODS.
+		
 
 		// START - tx4, Coinbase input, NOT part of UTXOpool
 		Transaction tx4 = new Transaction();

@@ -5,42 +5,66 @@ import java.security.*;
 import java.util.*;
 import java.io.*;
 
-public class MaxFeeHandler{
+public class MaxFeeHandler {
 
-	public class TxFee{
+	public class TxFee implements Comparable<TxFee> {
 
 		public int tx_num;
-		public int fee;
+		public double fee;
 		
-		public TxFee(int tx_num, int fee){
-			this.fee = fee;
-			this.tx_num = tx_num;
+		public TxFee(int t, double f){
+			fee = f;
+			tx_num = t;
+		}
+
+		@Override
+		public int compareTo(final TxFee other){
+			return Double.compare(this.fee, other.fee);
 		}
 
 
+		@Override
+		public String toString(){
+			return "Tx_Num:" + tx_num + " , fee:" + fee;
+		}
+
 	}
 
-	public static Transaction[] handleTxs(Transaction[] txs){
+	public Transaction[] handleTxs(Transaction[] txs){
+		ArrayList<TxFee> tx_fee_arr = new ArrayList<TxFee>();
 		//Estimate fee on each transaction
-		ArrayList<Transaction.Input> inputs;
 		for(int i = 0 ; i < txs.length ; i++){
+			double input_sum = 0;
+			double output_sum = 0;
+			ArrayList<Transaction.Input> inputs;
+			ArrayList<Transaction.Output> outputs;
+			
 			System.out.println("\nhandleTxs - Manipulating tx hash:" + Hex.toHexString(txs[i].getHash()));
 			inputs = txs[i].getInputs();
 			//Getting sum of all inputs
 			for(int j = 0 ; j < inputs.size() ; j++){
-				System.out.println("Prev tx.hash:" + Hex.toHexString(inputs.get(j).prevTxHash) + " : " + inputs.get(j).outputIndex);
 				UTXO utxo = new UTXO(inputs.get(j).prevTxHash, inputs.get(j).outputIndex);
+				Transaction.Output utxo_output = TxHandler.spent_pool.getTxOutput(utxo);
+				System.out.println("Prev tx.hash:" + Hex.toHexString(inputs.get(j).prevTxHash) + " : " + inputs.get(j).outputIndex);
 				System.out.println("cointains?:" + TxHandler.spent_pool.contains(utxo));
-				
+				input_sum += utxo_output.value;
 			}	
-			// ArrayList<UTXO> set_pool = TxHandler.pool.getAllUTXO();
-			// System.out.println("======UTXOPool======");
-			// for(int x = 0 ; x < set_pool.size() ; x++){
-			// 	System.out.println(Hex.toHexString(set_pool.get(x).getTxHash()) + " : " + set_pool.get(x).getIndex());
-			// }
-			TxHandler.printPool(1);
+			outputs = txs[i].getOutputs();
+			for(int j = 0 ; j < outputs.size() ; j++){
+				output_sum += outputs.get(j).value;
+			}
+			System.out.println("Input_sum:" + input_sum);
+			System.out.println("Output_sum:" + output_sum);
 
+
+			TxFee tx = new TxFee(i, input_sum - output_sum);
+			tx_fee_arr.add(tx);
 		}
+		System.out.println("Printing txs with fee arr...");
+		for(TxFee tx : tx_fee_arr){
+			System.out.println(tx);
+		}
+
 		return null;
 	}
 
