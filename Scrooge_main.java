@@ -107,7 +107,7 @@ public class Scrooge_main{
 
 		// START - tx2 (valid), tx coinbase input, two valid outputs
 		Transaction tx2 = new Transaction();
-		tx2.addInput(tx.getHash(),1);
+		tx2.addInput(tx.getHash(),0);	//10.0
 		tx2.addOutput(5, pubk_alice);
 		tx2.addOutput(3, pubk_alice);
 		tx2.addOutput(2, pubk_alice);
@@ -135,12 +135,12 @@ public class Scrooge_main{
 		tx3.finalize();
 		// END - tx3
 
-
-		// START - tx33 (valid), coinbase input
+	// START - Transactions testing fees
+		// START - tx33 (valid), coinbase input, fee = 0.1
 		Transaction tx33 = new Transaction();
-		tx33.addInput(tx.getHash(),0); //10.0
+		tx33.addInput(tx.getHash(),1); 		//value: 1.0
 		tx33.addOutput(0.5, pubk_alice);
-		tx33.addOutput(0.5, pubk_alice);
+		tx33.addOutput(0.4, pubk_alice);
 
 		signature.initSign(privk_scrooge);
 		signature.update(tx33.getRawDataToSign(0));
@@ -150,8 +150,21 @@ public class Scrooge_main{
 		// END - tx33
 
 
-//TODO: ADD ADDITIONAL TRANSACTIONS TO TEST COMPARE, SORT ARRAY METHODS.
-		
+		// START - tx34 (valid), coinbase input, fee = 1.0
+		Transaction tx34 = new Transaction();
+		tx34.addInput(tx2.getHash(),0); 	//value: 5.0
+		tx34.addOutput(3.0, pubk_alice);
+		tx34.addOutput(1.0, pubk_alice);
+
+		signature.initSign(privk_alice);
+		signature.update(tx34.getRawDataToSign(0));
+		sig_bytes = signature.sign();
+		tx34.addSignature(sig_bytes, 0);
+		tx34.finalize();
+		// END - tx34
+	// END - Transactions testing fees
+
+
 
 		// START - tx4, Coinbase input, NOT part of UTXOpool
 		Transaction tx4 = new Transaction();
@@ -239,9 +252,9 @@ public class Scrooge_main{
 
 
 		TxHandler txHandler = new TxHandler(utxoPool);
-		System.out.println("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx33}).length);
+		System.out.println("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx2, tx33, tx34}).length);
 		MaxFeeHandler maxFeeHandler = new MaxFeeHandler();
-		maxFeeHandler.handleTxs(new Transaction[]{tx33});
+		maxFeeHandler.handleTxs(new Transaction[]{tx33, tx34});
 	}
 }
 

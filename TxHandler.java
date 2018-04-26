@@ -46,6 +46,7 @@ public class TxHandler {
 	 *     values; and false otherwise.
 	 */
 	public boolean isValid(Transaction tx) {
+		System.out.println("Validating new tx.......");
 		boolean isValid = true;
 		Set<UTXO> set = new HashSet<UTXO>();
 
@@ -54,6 +55,7 @@ public class TxHandler {
 		for(Transaction.Output i : outputs){
 			// (4) - all of txs output values are non-negative
 			if (i.value < 0){
+				System.out.println("[handleTx] invalid tx - negative inputs");
 				return false;
 			}
 			output_sum += i.value;
@@ -64,27 +66,38 @@ public class TxHandler {
 		for(Transaction.Input i : inputs){
 			UTXO utxo = new UTXO(i.prevTxHash, i.outputIndex);
 			Transaction.Output prev_output = pool.getTxOutput(utxo);
+			assert utxo != null;
+			assert prev_output != null;
 			// (1) - Checking all outputs claimed are in the current UTXO pool
 			if(prev_output == null){
+				System.out.println("[handleTx] invalid tx - Prev_output == null");
+
 				return false;
 			}
 			//(2) - Verify the signatures on each input are valid
 			if(!Crypto.verifySignature(prev_output.address, tx.getRawDataToSign(counter), i.signature)){
+				System.out.println("[handleTx] invalid tx - Signature failed");
 				return false;
 			}
 			//(3) - No UTXO is claimed multiple times
 			if(set.contains(utxo)){
+				System.out.println("[handleTx] invalid tx - UTXO Claimed multiple times");
 				return false;
 			}else{
 				set.add(utxo);
 			}
+			System.out.println("Input_sum:" + prev_output.value );
 			input_sum += prev_output.value;
 			counter++;
+			System.out.println("[Info] - new input_sum:" + input_sum);
 		}
 		//(5) - Checking sum outputs is less than sum of input
 		if (input_sum < output_sum){
+			System.out.println("[handleTx] invalid tx - Sum outputs is less than sum of input | inputs:" + input_sum + " | outputs:" + output_sum);
 			return false;
 		}
+		System.out.println("[handleTx] Tx is valid");
+
 		return true;
 	}
 

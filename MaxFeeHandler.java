@@ -45,6 +45,7 @@ public class MaxFeeHandler {
 			for(int j = 0 ; j < inputs.size() ; j++){
 				UTXO utxo = new UTXO(inputs.get(j).prevTxHash, inputs.get(j).outputIndex);
 				Transaction.Output utxo_output = TxHandler.spent_pool.getTxOutput(utxo);
+				assert utxo_output != null;
 				System.out.println("Prev tx.hash:" + Hex.toHexString(inputs.get(j).prevTxHash) + " : " + inputs.get(j).outputIndex);
 				System.out.println("cointains?:" + TxHandler.spent_pool.contains(utxo));
 				input_sum += utxo_output.value;
