@@ -10,7 +10,6 @@ import java.io.*;
 public class MaxFeeHandler {
 
 	public class TxFee implements Comparable<TxFee> {
-
 		public int tx_num;
 		public double fee;
 		
@@ -24,12 +23,10 @@ public class MaxFeeHandler {
 			return Double.compare(this.fee, other.fee);
 		}
 
-
 		@Override
 		public String toString(){
 			return "Tx_Num:" + tx_num + " , fee:" + fee;
 		}
-
 	}
 
 	/**
@@ -67,7 +64,6 @@ public class MaxFeeHandler {
 		for(int i = 0 ; i < txs.length ; i++){
 			ordered_tx[i] = txs[tx_fee_arr.get(i).tx_num];
 		}
-
 
 		return ordered_tx;
 	}
