@@ -9,7 +9,6 @@ import java.io.*;
 
 public class Scrooge_main{
 
-
 	public static String printKey(byte[] key){
 		String hash = "";
 		try{
@@ -67,7 +66,6 @@ public class Scrooge_main{
 		// String result2 = bitcoinAPI(waka);
 		// System.out.println("dumpprivkey: "+result2);
 
-
 		KeyPair pair = keyGen.generateKeyPair();
 		PrivateKey privk_scrooge = pair.getPrivate();
 		PublicKey pubk_scrooge = pair.getPublic();
@@ -121,19 +119,19 @@ public class Scrooge_main{
 		// END - tx2
 
 
-		// START - tx3 (invalid), coinbase input, output higher value than input
-		Transaction tx3 = new Transaction();
-		tx3.addInput(tx.getHash(),1);
-		tx3.addOutput(0.5, pubk_alice);
-		tx3.addOutput(0.5, pubk_alice);
-		tx3.addOutput(0.5, pubk_alice);	// this output exceeds input sum
+		// // START - tx3 (invalid), coinbase input, output higher value than input
+		// Transaction tx3 = new Transaction();
+		// tx3.addInput(tx.getHash(),1);
+		// tx3.addOutput(0.5, pubk_alice);
+		// tx3.addOutput(0.5, pubk_alice);
+		// tx3.addOutput(0.5, pubk_alice);	// this output exceeds input sum
 
-		signature.initSign(privk_scrooge);
-		signature.update(tx3.getRawDataToSign(0));
-		sig_bytes = signature.sign();
-		tx3.addSignature(sig_bytes, 0);
-		tx3.finalize();
-		// END - tx3
+		// signature.initSign(privk_scrooge);
+		// signature.update(tx3.getRawDataToSign(0));
+		// sig_bytes = signature.sign();
+		// tx3.addSignature(sig_bytes, 0);
+		// tx3.finalize();
+		// // END - tx3
 
 	// START - Transactions testing fees
 		// START - tx33 (valid), coinbase input, fee = 0.1
@@ -150,7 +148,7 @@ public class Scrooge_main{
 		// END - tx33
 
 
-		// START - tx34 (valid), coinbase input, fee = 1.0
+		// START - tx34 (valid), fee = 1.0
 		Transaction tx34 = new Transaction();
 		tx34.addInput(tx2.getHash(),0); 	//value: 5.0
 		tx34.addOutput(3.0, pubk_alice);
@@ -162,8 +160,21 @@ public class Scrooge_main{
 		tx34.addSignature(sig_bytes, 0);
 		tx34.finalize();
 		// END - tx34
-	// END - Transactions testing fees
 
+
+		// START - tx35 (valid), fee = 0.3
+		Transaction tx35 = new Transaction();
+		tx35.addInput(tx2.getHash(),1); 	//value: 3.0
+		tx35.addOutput(1.5, pubk_alice);
+		tx35.addOutput(1.2, pubk_alice);
+
+		signature.initSign(privk_alice);
+		signature.update(tx35.getRawDataToSign(0));
+		sig_bytes = signature.sign();
+		tx35.addSignature(sig_bytes, 0);
+		tx35.finalize();
+		// END - tx35
+	// END - Transactions testing fees
 
 
 		// START - tx4, Coinbase input, NOT part of UTXOpool
@@ -252,9 +263,9 @@ public class Scrooge_main{
 
 
 		TxHandler txHandler = new TxHandler(utxoPool);
-		System.out.println("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx2, tx33, tx34}).length);
+		System.out.println("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx2, tx33, tx34, tx35}).length);
 		MaxFeeHandler maxFeeHandler = new MaxFeeHandler();
-		maxFeeHandler.handleTxs(new Transaction[]{tx33, tx34});
+		maxFeeHandler.handleTxs(new Transaction[]{tx34, tx33, tx35});
 	}
 }
 
