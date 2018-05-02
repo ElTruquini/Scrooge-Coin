@@ -261,7 +261,6 @@ public class Scrooge_main{
 		tx9.finalize();
 		// END - tx9
 
-
 		TxHandler txHandler = new TxHandler(utxoPool);
 		System.out.println("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx2, tx33, tx34, tx35}).length);
 		MaxFeeHandler maxFeeHandler = new MaxFeeHandler();
