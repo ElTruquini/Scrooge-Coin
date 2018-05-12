@@ -6,6 +6,7 @@ public class TxHandler {
 
 	protected static UTXOPool pool;
 	protected static UTXOPool spent_pool; // contains historic UTXOs
+	protected static int tx_counter;
 
 	/**
 	 * Creates a public ledger whose current UTXOPool (collection of unspent transaction outputs) is
@@ -15,6 +16,7 @@ public class TxHandler {
 	public TxHandler(UTXOPool utxoPool) {
 		pool = new UTXOPool(utxoPool);
 		spent_pool = new UTXOPool();
+		tx_counter = 0;
 	}
 
 	// Prints current state of UTXOPool pool
@@ -55,6 +57,7 @@ public class TxHandler {
 			// (4) - all of txs output values are non-negative
 			if (i.value < 0){
 				return false;
+
 			}
 			output_sum += i.value;
 		}
@@ -81,13 +84,12 @@ public class TxHandler {
 				set.add(utxo);
 			}
 			input_sum += prev_output.value;
-			counter++;
 		}
 		//(5) - Checking sum outputs is less than sum of input
 		if (input_sum < output_sum){
 			return false;
 		}
-
+		System.out.println("[INFO] TxHandler.isValid - Tx#:" + tx_counter + " is valid");
 		return true;
 	}
 
@@ -98,7 +100,8 @@ public class TxHandler {
 	 */
 	public Transaction[] handleTxs(Transaction[] possibleTxs) {
 		ArrayList<Transaction> temp = new ArrayList<Transaction>();
-		for(int i = 0 ; i < possibleTxs.length ; i++){
+		for(int i = 0 ; i < possibleTxs.length ; i++, tx_counter++){
+			System.out.println("[INFO] txHandler - Validating tx#:" + tx_counter);
 			if(isValid(possibleTxs[i])){
 				temp.add(possibleTxs[i]);
 				// removing spent inputs from pool, adding them to spent (historic) pool
