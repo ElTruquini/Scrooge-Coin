@@ -32,6 +32,7 @@ public class Transaction {
         }
     }
 
+
     public class Output {
         /** value in bitcoins of the output */
         public double value;
@@ -58,6 +59,10 @@ public class Transaction {
         hash = tx.hash.clone();
         inputs = new ArrayList<Input>(tx.inputs);
         outputs = new ArrayList<Output>(tx.outputs);
+    }
+
+    public String toString(){
+        return "tx_list - hash:"+TxHandler.trimHash(this.hash);
     }
 
     public void addInput(byte[] prevTxHash, int outputIndex) {

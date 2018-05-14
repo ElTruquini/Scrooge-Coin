@@ -26,13 +26,15 @@ public class TxHandler {
 			System.out.println("=======Curr UTXOPool==========");
 			ArrayList<UTXO> curr = pool.getAllUTXO();
 			for(UTXO i : curr){ 
-				System.out.println("TxHash:" + Hex.toHexString(i.getTxHash()) + " | i:" + i.getIndex());
+				System.out.println("TxHash:" + trimHash(i.getTxHash()) + " | i:"
+				+ i.getIndex() + "|value: " + pool.getTxOutput(i).value);
 			}
 		}else{
 			System.out.println("=======Spent UTXOPool=========");
 			ArrayList<UTXO> spents = spent_pool.getAllUTXO();
 			for(UTXO i : spents){ 
-				System.out.println("TxHash:" + Hex.toHexString(i.getTxHash()) + " | i:" + i.getIndex());
+				System.out.println("TxHash:" + trimHash(i.getTxHash()) + " | i:" 
+				+ i.getIndex() + "|value: " + pool.getTxOutput(i).value);
 			}
 		}
 		System.out.println("==============================");
@@ -44,10 +46,13 @@ public class TxHandler {
 	 * (2) the signatures on each input of {@code tx} are valid, 
 	 * (3) no UTXO is claimed multiple times by {@code tx},
 	 * (4) all of {@code tx}s output values are non-negative, and
-	 * (5) the sum of {@code tx}s input values is greater than or equal to the sum of its output
-	 *     values; and false otherwise.
+	 * (5) the sum of {@code tx}s input values is greater than or equal to the sum of 
+	 *		its output values; and false otherwise.
 	 */
 	public boolean isValid(Transaction tx) {
+		System.out.println("[INFO] txHandler.isValid() Validating TxHash:" +  trimHash(tx.getHash()));
+		printPool(0);	
+
 		boolean isValid = true;
 		Set<UTXO> set = new HashSet<UTXO>();
 
@@ -68,17 +73,24 @@ public class TxHandler {
 			UTXO utxo = new UTXO(i.prevTxHash, i.outputIndex);
 			Transaction.Output prev_output = pool.getTxOutput(utxo);
 			assert utxo != null;
-			assert prev_output != null;
 			// (1) - Checking all outputs claimed are in the current UTXO pool
 			if(prev_output == null){
+				System.out.println("[INVALID] UTXO not found - Tx#:" + tx_counter 
+						+ "|txHash: " + trimHash(tx.getHash()));
 				return false;
 			}
 			//(2) - Verify the signatures on each input are valid
-			if(!Crypto.verifySignature(prev_output.address, tx.getRawDataToSign(counter), i.signature)){
+			if(!Crypto.verifySignature(prev_output.address, tx.getRawDataToSign(counter),
+					 i.signature)){
+				System.out.println("[INVALID] Invalid signature - Tx#:" + tx_counter 
+					+ "|txHash: " + trimHash(tx.getHash()));
 				return false;
 			}
 			//(3) - No UTXO is claimed multiple times
 			if(set.contains(utxo)){
+				System.out.println("[INVALID] UTXO claimed multiple times - Tx#:" 
+						+ tx_counter 
+				+ "|txHash: " + trimHash(tx.getHash()));
 				return false;
 			}else{
 				set.add(utxo);
@@ -87,25 +99,34 @@ public class TxHandler {
 		}
 		//(5) - Checking sum outputs is less than sum of input
 		if (input_sum < output_sum){
+			System.out.println("[INVALID] Output less than input - Tx#:" + tx_counter 
+					+ "|txHash: " + trimHash(tx.getHash()));
 			return false;
 		}
-		System.out.println("[INFO] TxHandler.isValid - Tx#:" + tx_counter + " is valid");
+		System.out.println("[VALID] - Tx#:" + tx_counter 
+				+ "|txHash:" + trimHash(tx.getHash()));
 		return true;
 	}
 
+	public static String trimHash(byte[] bytes){
+		String s = Hex.toHexString(bytes);
+		return s.substring(0, Math.min(s.length(),6)); //avoids exception when string is less than 5
+	}
+
 	/**
-	 * Handles each epoch by receiving an unordered array of proposed transactions, checking each
-	 * transaction for correctness, returning a mutually valid array of accepted transactions, and
-	 * updating the current UTXO pool as appropriate.
+	 * Handles each epoch by receiving an unordered array of proposed transactions, 
+	 *	checking each transaction for correctness, returning a mutually valid array
+	 *	of accepted transactions, and updating the current UTXO pool as appropriate.
 	 */
-	public Transaction[] handleTxs(Transaction[] possibleTxs) {
+	public Transaction[] handleTxs(Transaction[] candidateTxs) {
 		ArrayList<Transaction> temp = new ArrayList<Transaction>();
-		for(int i = 0 ; i < possibleTxs.length ; i++, tx_counter++){
-			System.out.println("[INFO] txHandler - Validating tx#:" + tx_counter);
-			if(isValid(possibleTxs[i])){
-				temp.add(possibleTxs[i]);
+		for(int i = 0 ; i < candidateTxs.length ; i++, tx_counter++){
+			// System.out.println("[INFO] txHandler - Validating tx#:" + tx_counter +
+				 // " |txHash: " +  trimHash(candidateTxs[i].getHash()));
+			if(isValid(candidateTxs[i])){
+				temp.add(candidateTxs[i]);
 				// removing spent inputs from pool, adding them to spent (historic) pool
-				ArrayList<Transaction.Input> inputs = possibleTxs[i].getInputs();
+				ArrayList<Transaction.Input> inputs = candidateTxs[i].getInputs();
 				for(Transaction.Input in : inputs){
 					UTXO x = new UTXO(in.prevTxHash, in.outputIndex);
 					Transaction.Output spent_out = pool.getTxOutput(x);
@@ -114,9 +135,9 @@ public class TxHandler {
 				}
 				// adding new utxo's to pool
 				int index = 0;
-				ArrayList<Transaction.Output> outputs = possibleTxs[i].getOutputs();
+				ArrayList<Transaction.Output> outputs = candidateTxs[i].getOutputs();
 				for(Transaction.Output out : outputs){
-					pool.addUTXO(new UTXO(possibleTxs[i].getHash(), index),out);
+					pool.addUTXO(new UTXO(candidateTxs[i].getHash(), index),out);
 					index++;
 				}
 			}
