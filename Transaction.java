@@ -32,8 +32,8 @@ public class Transaction {
 		}
 
 		public String toString(){
-			return "    Input - prevTxHash:" + TxHandler.trimHash(this.prevTxHash) 
-					+ "	| outputIndex:" + outputIndex;
+			return "\tInput - prevTxHash:\t" + TxHandler.trimHash(this.prevTxHash) 
+					+ "\t| outputIndex:" + outputIndex;
 		}
 
 	}
@@ -51,8 +51,8 @@ public class Transaction {
 		}
 
 		public String toString(){
-			return "    Output - payTo:" + TxHandler.trimHash(this.address.getEncoded()) 
-					+ "	| value:" + value;
+			return "\tOutput - payTo:\t\t" + TxHandler.trimHash(this.address.getEncoded()) 
+					+ "\t| value:" + value;
 		}
 	}
 

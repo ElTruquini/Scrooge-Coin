@@ -1,4 +1,3 @@
-import junit.framework.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import java.math.BigInteger;
@@ -7,11 +6,12 @@ import java.util.*;
 import java.io.*;
 
 
-public class testunit extends TestCase {
+public class testunit{
 
 	KeyPair[] kpair_org, kpair_dest;
 	ArrayList<Transaction> txs_list = new ArrayList<Transaction>();
 	UTXO utxo;
+	UTXOPool pool;
 	PrivateKey priv_orig, priv_dest;
 	PublicKey pub_orig, pub_dest;
 	
@@ -72,22 +72,25 @@ public class testunit extends TestCase {
 	}
 
 	// Mode = 1, Simple tx, one input, one output
-	public Transaction createCoinbase(int mode) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+	public Transaction createCoinbase(int tcase, int outputs) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 		Random random = new Random();
 		int max = 20, min = 0, range = ((max-min)+1)+min;
 		Transaction tx = new Transaction();
 
-		System.out.println("[INFO] testunit.createCoinbase - Mode#: " + mode);
+		System.out.println("[INFO] testunit.createCoinbase - tCase#: " + tcase);
 		
 		// Simple transaction, 1 input, 1 output
-		if (mode == 1){
-			tx.addOutput(1000, kpair_dest[0].getPublic());
+		if (tcase == 1){
+			for(int i = 0; i<outputs ; i++){
+
+				tx.addOutput(10, kpair_dest[0].getPublic());
+			}
+
 
 			// using random place holder value for hash
 			byte[] initial_hash = BigInteger.valueOf(1695609641).toByteArray();
 			tx.addInput(initial_hash, 0);
-			initial_hash = BigInteger.valueOf(1000000000).toByteArray();
-			tx.addInput(initial_hash, 1);
+
 
 			// Signature signature = Signature.getInstance("SHA256withRSA");
 			// signature.initSign(kpair_org[0].getPrivate());
@@ -98,10 +101,13 @@ public class testunit extends TestCase {
 			byte[] signature = sign(kpair_org[0].getPrivate(), tx.getRawDataToSign(0));
 			tx.addSignature(signature, 0);
 			tx.finalize();
-			//NEED TO CREATE MULTIPLE OUTPUTS THAT WILL BE THE UTXO FOR MY INPUTS
+			txs_list.add(tx);
 		}
-		
-		TxHandler.pool.addUTXO(new UTXO(tx.getHash(), 0), tx.getOutput(0));
+		for(int i = 0; i < tx.numOutputs() ; i++){
+			TxHandler.pool.addUTXO(new UTXO(tx.getHash(), i), tx.getOutput(i));
+			pool.addUTXO(new UTXO(tx.getHash(), i), tx.getOutput(i));
+			
+		}
 		TxHandler.printPool(0);
 		return tx;
 	}
@@ -113,24 +119,7 @@ public class testunit extends TestCase {
 		return signature.sign();
 	}
 
-	public void createTxs(int tx_num, int mode, Transaction coinbase) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {		Transaction cb = coinbase, tx;
-		System.out.println("tx_num:" + tx_num);
-		if(mode == 1){
-			for(int i = 0; i < tx_num ; i++){
-				tx = new Transaction ();
-				tx.addInput(cb.getHash(),0);
-				tx.addOutput(randDouble(), kpair_dest[1].getPublic());
-				
-				byte[] signature = sign(kpair_dest[0].getPrivate(), tx.getRawDataToSign(0));
-				tx.addSignature(signature,0);
-				tx.finalize();
-				txs_list.add(tx);
-			// 	for(Transaction y : txs_list)
-			// 		System.out.println(y);
-			}
-		}
-		printTxList();
-	}
+
 
 	public void printTxList(){
 		System.out.println("+++++Printing TxList+++++");
@@ -140,16 +129,10 @@ public class testunit extends TestCase {
 			ArrayList<Transaction.Output> outs = txs_list.get(i).getOutputs();
 
 			System.out.println(txs_list.get(i));
-			for(int j = 0 ; j < inps.size() ; j++){
-				System.out.println(inps.get(j));
-			}
-			for(int z = 0 ; z<outs.size() ; z++){
-				System.out.println(outs.get(z));
-			}
-		
+			for(int j = 0 ; j < inps.size() ; j++) System.out.println(inps.get(j));
+			for(int z = 0 ; z<outs.size() ; z++) System.out.println(outs.get(z));		
 		}
 		System.out.println("+++++++++++++++++++++++++++");
-
 	}
 
 	//Generates a random double between min and max
@@ -160,6 +143,54 @@ public class testunit extends TestCase {
 		return result;
 	}
 
+	public static int randInt(int min, int max){
+		assert(min < max);
+		Random r = new Random();
+		return r.nextInt((max - min) + 1) + min;
+	}
+
+	public void createTxs(int tcase, int tx_num, Transaction coinbase, UTXOPool p) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {		Transaction cb = coinbase, tx;
+		ArrayList<UTXO> unused_utxo = pool.getAllUTXO();
+		Set<UTXO> used_utxo = new HashSet<UTXO>();
+		utxo = null;
+		int rand = -1;
+
+		System.out.println("Printing POOL within createTxs");
+		for (UTXO u : unused_utxo) System.out.println(u);
+		
+		// utxo = unused_utxo.get(randInt(0, tx_num));
+
+
+		//All transactions have UTXO, are valid and simple
+		if(tcase == 1){
+			for(int i = 0; i < tx_num ; i++){
+				tx = new Transaction ();
+				//Get an existing UTXO
+				if(used_utxo.contains(utxo) || utxo == null){
+					rand = randInt(0, tx_num-1);
+					utxo = unused_utxo.get(rand);
+				}
+				assert(utxo != null && rand != -1) : "UTXO or Rand are null";
+				System.out.println("Adding - random:" + rand + " utxo: " + utxo);
+
+				tx.addInput(utxo.getTxHash(), utxo.getIndex());
+				used_utxo.add(utxo);				
+
+
+			
+
+					
+				// tx.addOutput(randDouble(), kpair_dest[1].getPublic());
+				
+				// byte[] signature = sign(kpair_dest[0].getPrivate(), tx.getRawDataToSign(0));
+				// tx.addSignature(signature,0);
+				// tx.finalize();
+				// txs_list.add(tx);
+			// 	for(Transaction y : txs_list)
+			// 		System.out.println(y);
+			}
+		}
+	}
 
 	//args[0] = Test number
 	//args[1] = Number of trasactions 
@@ -167,22 +198,23 @@ public class testunit extends TestCase {
 		Transaction tx = null;
 		testunit t = new testunit();
 		if (args.length < 2){
-			System.out.println("Usage: [Program_name] [test_num] [number_of_transactions]");
+			System.out.println("Usage: [test_num] [number_of_transactions]");
 			System.exit(0);
 		}
 		int test_case = Integer.parseInt(args[0]);
 		int txs_num = Integer.parseInt(args[1]);
 		
-		UTXOPool pool = new UTXOPool();
-		TxHandler txHandler = new TxHandler(pool); // ADDED
+		t.pool = new UTXOPool();
+		TxHandler txHandler = new TxHandler(t.pool); 
 
 		//Test1 - Simple transaction - 1 kpair, multiple txs
 		try{
 			if(test_case == 1){
 				t.createKeys(2); //[0], used for coinbase - [1], for other txs
-				tx = t.createCoinbase(1);
-				t.createTxs(txs_num, 1, tx);
-				System.out.println("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx}).length);
+				tx = t.createCoinbase(1,txs_num);
+				t.printTxList();
+				t.createTxs(1, txs_num, tx, t.pool);
+				// System.out.println("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx}).length);
 		
 
 

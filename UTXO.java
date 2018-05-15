@@ -27,6 +27,12 @@ public class UTXO implements Comparable<UTXO> {
         return index;
     }
 
+    public String toString(){
+        return "\tUTXO - txHash:\t" + TxHandler.trimHash(this.txHash) 
+                + "\t| index:" + index;
+    }
+
+
     /**
      * Compares this UTXO to the one specified by {@code other}, considering them equal if they have
      * {@code txHash} arrays with equal contents and equal {@code index} values

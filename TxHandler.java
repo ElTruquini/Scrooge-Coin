@@ -31,15 +31,15 @@ public class TxHandler {
 			System.out.println("=======Curr UTXOPool==========");
 			ArrayList<UTXO> curr = pool.getAllUTXO();
 			for(UTXO i : curr){ 
-				System.out.println("TxHash:" + trimHash(i.getTxHash()) + " | i:"
-				+ i.getIndex() + "|value: " + pool.getTxOutput(i).value);
+				System.out.println("TxHash:" + trimHash(i.getTxHash()) + "\t|i:"
+				+ i.getIndex() + "\t|value: " + pool.getTxOutput(i).value);
 			}
 		}else{
 			System.out.println("=======Spent UTXOPool=========");
 			ArrayList<UTXO> spents = spent_pool.getAllUTXO();
 			for(UTXO i : spents){ 
-				System.out.println("TxHash:" + trimHash(i.getTxHash()) + " | i:" 
-				+ i.getIndex() + "|value: " + pool.getTxOutput(i).value);
+				System.out.println("TxHash:" + trimHash(i.getTxHash()) + "\t|i:" 
+				+ i.getIndex() + "\t|value: " + pool.getTxOutput(i).value);
 			}
 		}
 		System.out.println("==============================");
@@ -95,7 +95,7 @@ public class TxHandler {
 			if(set.contains(utxo)){
 				System.out.println("[INVALID] UTXO claimed multiple times - Tx#:" 
 						+ tx_counter 
-				+ "		|txHash: " + trimHash(tx.getHash()));
+				+ "	\t|txHash: " + trimHash(tx.getHash()));
 				return false;
 			}else{
 				set.add(utxo);
