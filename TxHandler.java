@@ -1,6 +1,11 @@
 import java.nio.ByteBuffer;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
+import java.math.BigInteger;
+import java.security.*;
 import java.util.*;
+import java.io.*;
+
 
 public class TxHandler {
 
@@ -75,22 +80,22 @@ public class TxHandler {
 			assert utxo != null;
 			// (1) - Checking all outputs claimed are in the current UTXO pool
 			if(prev_output == null){
-				System.out.println("[INVALID] UTXO not found - Tx#:" + tx_counter 
-						+ "|txHash: " + trimHash(tx.getHash()));
+				System.out.println("[INVALID] Prev_output not found - Tx#:" + tx_counter 
+						+ "	|txHash: " + trimHash(tx.getHash()));
 				return false;
 			}
 			//(2) - Verify the signatures on each input are valid
 			if(!Crypto.verifySignature(prev_output.address, tx.getRawDataToSign(counter),
 					 i.signature)){
 				System.out.println("[INVALID] Invalid signature - Tx#:" + tx_counter 
-					+ "|txHash: " + trimHash(tx.getHash()));
+					+ "	 |txHash: " + trimHash(tx.getHash()));
 				return false;
 			}
 			//(3) - No UTXO is claimed multiple times
 			if(set.contains(utxo)){
 				System.out.println("[INVALID] UTXO claimed multiple times - Tx#:" 
 						+ tx_counter 
-				+ "|txHash: " + trimHash(tx.getHash()));
+				+ "		|txHash: " + trimHash(tx.getHash()));
 				return false;
 			}else{
 				set.add(utxo);
@@ -100,11 +105,11 @@ public class TxHandler {
 		//(5) - Checking sum outputs is less than sum of input
 		if (input_sum < output_sum){
 			System.out.println("[INVALID] Output less than input - Tx#:" + tx_counter 
-					+ "|txHash: " + trimHash(tx.getHash()));
+					+ " 	|txHash: " + trimHash(tx.getHash()));
 			return false;
 		}
 		System.out.println("[VALID] - Tx#:" + tx_counter 
-				+ "|txHash:" + trimHash(tx.getHash()));
+				+ "		|txHash:" + trimHash(tx.getHash()));
 		return true;
 	}
 
@@ -112,6 +117,19 @@ public class TxHandler {
 		String s = Hex.toHexString(bytes);
 		return s.substring(0, Math.min(s.length(),6)); //avoids exception when string is less than 5
 	}
+
+
+	public static String printKey(byte[] key) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+		String hash = "";
+		MessageDigest m = MessageDigest.getInstance("MD5");
+		m.reset();
+		m.update(key);
+		// byte[] digest = m.digest();
+
+		return trimHash(m.digest());
+	}
+
+
 
 	/**
 	 * Handles each epoch by receiving an unordered array of proposed transactions, 

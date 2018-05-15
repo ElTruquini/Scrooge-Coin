@@ -98,9 +98,9 @@ public class testunit extends TestCase {
 			byte[] signature = sign(kpair_org[0].getPrivate(), tx.getRawDataToSign(0));
 			tx.addSignature(signature, 0);
 			tx.finalize();
-
-
+			//NEED TO CREATE MULTIPLE OUTPUTS THAT WILL BE THE UTXO FOR MY INPUTS
 		}
+		
 		TxHandler.pool.addUTXO(new UTXO(tx.getHash(), 0), tx.getOutput(0));
 		TxHandler.printPool(0);
 		return tx;
@@ -129,12 +129,28 @@ public class testunit extends TestCase {
 			// 		System.out.println(y);
 			}
 		}
-		System.out.println("Printing arraylists");
-		for(Transaction i : txs_list)
-			System.out.println(i);
-
+		printTxList();
 	}
 
+	public void printTxList(){
+		System.out.println("+++++Printing TxList+++++");
+
+		for(int i = 0 ; i < txs_list.size() ; i++){
+			ArrayList<Transaction.Input> inps = txs_list.get(i).getInputs();
+			ArrayList<Transaction.Output> outs = txs_list.get(i).getOutputs();
+
+			System.out.println(txs_list.get(i));
+			for(int j = 0 ; j < inps.size() ; j++){
+				System.out.println(inps.get(j));
+			}
+			for(int z = 0 ; z<outs.size() ; z++){
+				System.out.println(outs.get(z));
+			}
+		
+		}
+		System.out.println("+++++++++++++++++++++++++++");
+
+	}
 
 	//Generates a random double between min and max
 	public static double randDouble(){
