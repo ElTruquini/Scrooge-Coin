@@ -1,8 +1,8 @@
 import java.nio.ByteBuffer;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.util.encoders.Hex;
+// import org.bouncycastle.jce.provider.BouncyCastleProvider;
+// import org.bouncycastle.util.encoders.Hex;
 import java.math.BigInteger;
-import java.security.*;
+// import java.security.*;
 import java.util.*;
 import java.io.*;
 
@@ -56,7 +56,7 @@ public class TxHandler {
 	 */
 	public boolean isValid(Transaction tx) {
 		System.out.println("[INFO] txHandler.isValid() Validating TxHash:" +  trimHash(tx.getHash()));
-		printPool(0);	
+		// printPool(0);	
 
 		boolean isValid = true;
 		Set<UTXO> set = new HashSet<UTXO>();
@@ -80,20 +80,20 @@ public class TxHandler {
 			assert utxo != null;
 			// (1) - Checking all outputs claimed are in the current UTXO pool
 			if(prev_output == null){
-				System.out.println("[INVALID] Prev_output not found - Tx#:" + tx_counter 
-						+ "	|txHash: " + trimHash(tx.getHash()));
+				System.out.println("[***INVALID] Prev_output not found |curr_txHash: " + trimHash(tx.getHash()) 
+						+ "\t|utxo_txHash:" + trimHash(utxo.getTxHash()) + " |utxo_ind:" + utxo.getIndex());
 				return false;
 			}
 			//(2) - Verify the signatures on each input are valid
 			if(!Crypto.verifySignature(prev_output.address, tx.getRawDataToSign(counter),
 					 i.signature)){
-				System.out.println("[INVALID] Invalid signature - Tx#:" + tx_counter 
-					+ "	 |txHash: " + trimHash(tx.getHash()));
+				System.out.println("[***INVALID] Invalid signature - Tx#:" + tx_counter 
+					+ "\t|txHash: " + trimHash(tx.getHash()));
 				return false;
 			}
 			//(3) - No UTXO is claimed multiple times
 			if(set.contains(utxo)){
-				System.out.println("[INVALID] UTXO claimed multiple times - Tx#:" 
+				System.out.println("[***INVALID] UTXO claimed multiple times - Tx#:" 
 						+ tx_counter 
 				+ "	\t|txHash: " + trimHash(tx.getHash()));
 				return false;
@@ -104,12 +104,12 @@ public class TxHandler {
 		}
 		//(5) - Checking sum outputs is less than sum of input
 		if (input_sum < output_sum){
-			System.out.println("[INVALID] Output less than input - Tx#:" + tx_counter 
-					+ " 	|txHash: " + trimHash(tx.getHash()));
+			System.out.println("[***INVALID] Output less than input - Tx#:" + tx_counter 
+					+ "\t|txHash: " + trimHash(tx.getHash()));
 			return false;
 		}
 		System.out.println("[VALID] - Tx#:" + tx_counter 
-				+ "		|txHash:" + trimHash(tx.getHash()));
+				+ "\t|txHash:" + trimHash(tx.getHash()));
 		return true;
 	}
 
@@ -119,15 +119,13 @@ public class TxHandler {
 	}
 
 
-	public static String printKey(byte[] key) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-		String hash = "";
-		MessageDigest m = MessageDigest.getInstance("MD5");
-		m.reset();
-		m.update(key);
-		// byte[] digest = m.digest();
-
-		return trimHash(m.digest());
-	}
+	// public static String printKey(byte[] key) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+	// 	String hash = "";
+	// 	MessageDigest m = MessageDigest.getInstance("MD5");
+	// 	m.reset();
+	// 	m.update(key);
+	// 	return trimHash(m.digest());
+	// }
 
 
 
