@@ -23,6 +23,7 @@ public class Scrooge_main{
 		}catch (NoSuchAlgorithmException e){
 			e.printStackTrace(System.out);
 		}
+		
 		return hash;
 	}
 
@@ -249,19 +250,19 @@ public class Scrooge_main{
 
 
 		// START - tx9 (invalid), negative output
-		Transaction tx9 = new Transaction();
-		tx9.addInput(tx.getHash(),0);
-		tx9.addOutput(5, pubk_alice);
-		tx9.addOutput(-3, pubk_alice);
-		tx9.addOutput(2, pubk_alice);
+		// Transaction tx9 = new Transaction();
+		// tx9.addInput(tx.getHash(),0);
+		// tx9.addOutput(5, pubk_alice);
+		// tx9.addOutput(-3, pubk_alice);
+		// tx9.addOutput(2, pubk_alice);
 
-		// has only 1 input to sign
-		signature.initSign(privk_scrooge); 
-		signature.update(tx9.getRawDataToSign(0));
-		sig_bytes = signature.sign();
-		tx9.addSignature(sig_bytes, 0);
-		tx9.finalize();
-		// END - tx9
+		// // has only 1 input to sign
+		// signature.initSign(privk_scrooge); 
+		// signature.update(tx9.getRawDataToSign(0));
+		// sig_bytes = signature.sign();
+		// tx9.addSignature(sig_bytes, 0);
+		// tx9.finalize();
+		// // END - tx9
 
 		TxHandler txHandler = new TxHandler(utxoPool);
 		System.out.println("handleTxs:"+txHandler.handleTxs(new Transaction[]{tx2, tx33, tx34, tx35}).length);
